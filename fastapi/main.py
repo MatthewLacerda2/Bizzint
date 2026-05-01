@@ -1,15 +1,15 @@
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from llms import get_llms_txt
-from core.rate_limiter import limiter
-from core.logging_middleware import LoggingMiddleware
-from core.scheduler import setup_scheduler_jobs, start_scheduler, stop_scheduler
-from api.v1.endpoints import router as api_v1_router
+from .llms import get_llms_txt
+from .core.rate_limiter import limiter
+from .core.logging_middleware import LoggingMiddleware
+from .core.scheduler import setup_scheduler_jobs, start_scheduler, stop_scheduler
+from .api.endpoints import router as api_router
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi import _rate_limit_exceeded_handler
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
 logging.basicConfig(
@@ -52,7 +52,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(LoggingMiddleware)
-app.include_router(api_v1_router, prefix="/api/v1")
+app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/")
 async def root(request: Request):
