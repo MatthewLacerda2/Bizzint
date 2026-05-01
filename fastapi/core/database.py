@@ -1,9 +1,5 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from .config import settings
-from dotenv import load_dotenv
-
-load_dotenv()
 
 engine = create_async_engine(
     settings.DATABASE_URL,  # Already has postgresql+asyncpg://
@@ -11,16 +7,13 @@ engine = create_async_engine(
     max_overflow=100
 )
 
-AsyncSessionLocal = sessionmaker(
-    engine,
-    class_=AsyncSession,
-    autocommit=False,
+# Preferred SQLAlchemy 2.0 factory for async sessions
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine,
     autoflush=False,
+    expire_on_commit=False,
 )
 
 async def get_db():
     async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+        yield session

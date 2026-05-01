@@ -13,7 +13,7 @@ def setup_scheduler_jobs() -> None:
 
     #scheduler.add_job(
     #    whatever_function,
-    #    trigger=CronTrigger(hour=5, minute=0),
+    #    trigger=CronTrigger(hour=0, minute=5),
     #    id="whatever_id",
     #    name="Whatever Name",
     #    replace_existing=True,

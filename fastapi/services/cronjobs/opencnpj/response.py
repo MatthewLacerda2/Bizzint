@@ -4,7 +4,7 @@ from datetime import date
 
 class SocioResponse(BaseModel):
     name: str = Field(alias="nome_socio")
-    cnpj: str = Field(alias="cnpj_cpf_socio")
+    cnpj_cpf: str = Field(alias="cnpj_cpf_socio")
     qualificacao: str = Field(alias="qualificacao_socio")
     data_entrada: date = Field(alias="data_entrada_sociedade")
     identificador: str = Field(alias="identificador_socio")

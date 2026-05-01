@@ -9,10 +9,12 @@ class Socio(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)
     name = Column(String, nullable=False)
-    cnpj = Column(String, nullable=False)
+    cnpj_cpf = Column(String, nullable=False)
+
     qualificacao = Column(String, nullable=False)
     data_entrada = Column(DateTime, nullable=False, default=datetime.now)
     identificador = Column(String, nullable=False)
-    faixa_etaria = Column(String, nullable=False)
+    faixa_etaria = Column(String, nullable=True)
+    
     created_at = Column(DateTime, nullable=False, default=datetime.now)
     last_updated_at = Column(DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
