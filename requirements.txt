@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+pydantic[email]
+sqlalchemy[asyncio]
+psycopg2-binary
+alembic
+pgvector
+google-genai
+google-auth
+google-cloud-iam
+python-dotenv
+apscheduler
+bcrypt
+pyjwt

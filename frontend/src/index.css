@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+
+@theme {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --color-background: oklch(0.12 0 0);
+  --color-foreground: oklch(0.98 0 0);
+  
+  --color-primary: oklch(0.45 0.14 250);
+  --color-primary-foreground: oklch(0.98 0 0);
+  
+  --color-secondary: oklch(0.25 0 0);
+  --color-secondary-foreground: oklch(0.98 0 0);
+
+  --color-accent: oklch(0.3 0 0);
+  --color-accent-foreground: oklch(0.98 0 0);
+
+  --color-border: oklch(0.2 0 0);
+  --color-input: oklch(0.2 0 0);
+  --color-ring: oklch(0.6 0.18 250);
+
+  --color-muted: oklch(0.25 0 0);
+  --color-muted-foreground: oklch(0.7 0 0);
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+  
+  .text-gradient {
+    @apply bg-linear-to-br from-white to-white/40 bg-clip-text text-transparent;
+  }
+
+  .glow {
+    @apply shadow-[0_0_20px_rgba(100,150,255,0.3)];
+  }
+}
