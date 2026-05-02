@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
-from fastapi.models.base import Base
+from app.models.base import Base
 from sqlalchemy import Column, String, DateTime, Numeric
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 class Company(Base):
@@ -25,6 +26,8 @@ class Company(Base):
     telefone_1 = Column(String, nullable=True)
     telefone_2 = Column(String, nullable=True)
     capital_social = Column(Numeric(precision=15, scale=2), nullable=True)
-    
+
     created_at = Column(DateTime, nullable=False, default=datetime.now)
     last_updated_at = Column(DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
+    
+    socios = relationship("Socio", back_populates="company", cascade="all, delete-orphan")
