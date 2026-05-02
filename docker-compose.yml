@@ -30,14 +30,17 @@ services:
       - postgres_test_data:/var/lib/postgresql/data
     restart: unless-stopped
 
-  fastapi:
+  backend:
     build:
       context: .
-      dockerfile: fastapi/Dockerfile
-    container_name: bizzint_fastapi
+      dockerfile: app/Dockerfile
+    container_name: bizzint_backend
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:${POSTGRES_PASSWORD}@postgres:5432/bizzint
-      TEST_DATABASE_URL: postgresql+asyncpg://postgres:${POSTGRES_TEST_PASSWORD}@postgres_test:5432/bizzint_test
+      POSTGRES_SERVER: ${POSTGRES_SERVER:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-bizzint}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
       SECRET_KEY: ${SECRET_KEY}
@@ -71,7 +74,7 @@ services:
       - "8080:80"
     restart: unless-stopped
     depends_on:
-      fastapi:
+      backend:
         condition: service_healthy
     healthcheck:
       test:
