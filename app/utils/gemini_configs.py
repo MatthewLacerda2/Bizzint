@@ -4,14 +4,14 @@ from typing import Any
 from dotenv import load_dotenv
 from google.genai import Client
 from google.genai.types import GenerateContentConfig, EmbedContentConfig
-from ..core.config import Settings
+from ..core.config import settings
 from .envs import NUM_DIMENSIONS
 
 logger = logging.getLogger(__name__)
 load_dotenv()
 
 def get_client():
-    return Client(api_key=Settings.GEMINI_API_KEY)
+    return Client(api_key=settings.GEMINI_API_KEY)
 
 def get_gemini_json_config(json_schema: dict[str, Any]) -> GenerateContentConfig:
     return GenerateContentConfig(
@@ -19,9 +19,11 @@ def get_gemini_json_config(json_schema: dict[str, Any]) -> GenerateContentConfig
         response_schema=json_schema,
     )
 
-def get_gemini_text_config() -> GenerateContentConfig:
+def get_gemini_text_config(system_instruction: str = None) -> GenerateContentConfig:
     return GenerateContentConfig(
         response_mime_type='text/plain',
+        system_instruction=system_instruction,
+        automatic_function_calling={'disable': True}
     )
 
 def get_gemini_embedding_config(text: str) -> np.ndarray:

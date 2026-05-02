@@ -1,5 +1,18 @@
-def plot_tool(data: dict) -> dict:
+from typing import List, Optional, Literal
+
+def plot_tool(
+    labels: List[str], 
+    values: List[float], 
+    title: Optional[str] = None,
+    chart_type: Literal["line", "bar"] = "line"
+) -> dict:
+    """
+    Useful for creating charts and plots. 
+    Use 'line' for trends and 'bar' for comparisons.
+    """
     return {
-        "x": ["Jan", "Feb", "Mar", "Apr", "May"],
-        "y": [10, 25, 15, 30, 22]
+        "labels": labels,
+        "values": values,
+        "title": title,
+        "chart_type": chart_type
     }
