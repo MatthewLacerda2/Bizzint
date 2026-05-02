@@ -102,14 +102,7 @@ const PlotCard = ({ plot }: { plot: PlotData }) => {
 };
 
 function App() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: 'Hello! I am your BI Chatbot. I can help you query SQL databases and visualize data. How can I assist you today?',
-      timestamp: new Date()
-    }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -207,6 +200,19 @@ function App() {
           className="flex-1 overflow-y-auto p-4 space-y-8 scroll-smooth pt-20 pb-10"
         >
           <div className="max-w-2xl mx-auto w-full space-y-8">
+            {messages.length === 0 && !isLoading && (
+              <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in-95 duration-1000">
+                <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 shadow-inner">
+                  <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
+                </div>
+                <h2 className="text-2xl font-bold tracking-tight mb-2">Olá, sou Dolby</h2>
+                <p className="text-muted-foreground text-sm max-w-[300px] leading-relaxed">
+                  Um chatbot para pesquisa de mercado no Brasil. <br />
+                  Pergunte algo para começar!
+                </p>
+              </div>
+            )}
+
             {messages.map((msg) => (
               <div
                 key={msg.id}
