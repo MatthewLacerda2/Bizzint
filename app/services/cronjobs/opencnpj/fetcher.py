@@ -8,6 +8,7 @@ from ....repositories.company_repository import CompanyRepository
 from ....repositories.socio_repository import SocioRepository
 from ....utils.envs import OPENCNPJ_DELAY
 from ....core.database import AsyncSessionLocal
+from ...whatsapp.validate_numbers import validate_and_save_numbers
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ async def add_cnpjs_to_queue(cnpj_list: List[str]):
 
 async def process_cnpj_queue():
     base_url = "https://api.opencnpj.org"
+    collected_phones = set()
 
     async with httpx.AsyncClient() as client:
         while True:
@@ -42,9 +44,11 @@ async def process_cnpj_queue():
                         company = await company_repo.get_by_cnpj(cnpj)
                         now = datetime.now()
                         
+                        should_wait = False
                         if company and company.last_updated_at.month == now.month and company.last_updated_at.year == now.year:
                             logger.info(f"CNPJ {cnpj} already updated this month ({company.last_updated_at}). Skipping.")
                         else:
+                            should_wait = True
                             logger.info(f"Fetching CNPJ {cnpj}")
                             response = await client.get(f"{base_url}/{cnpj}?dataset=receita", timeout=15.0)
                             
@@ -92,6 +96,12 @@ async def process_cnpj_queue():
                                 else:
                                     db_company = await company_repo.create(company_data)
                                 
+                                # Collect phones for batch validation
+                                if parsed_data.telefone_1:
+                                    collected_phones.add(parsed_data.telefone_1)
+                                if parsed_data.telefone_2:
+                                    collected_phones.add(parsed_data.telefone_2)
+                                
                                 # Sync Partners (Socios)
                                 existing_socios = await socio_repo.get_by_company_id(db_company.id)
                                 for s in existing_socios:
@@ -121,8 +131,19 @@ async def process_cnpj_queue():
                 queued_cnpjs.discard(cnpj)
                 cnpj_queue.task_done()
                 
-                logger.info(f"Waiting {OPENCNPJ_DELAY} seconds before next queue item...")
-                await asyncio.sleep(OPENCNPJ_DELAY)
+                # If queue is empty, validate all collected phones in bulk
+                if cnpj_queue.empty() and collected_phones:
+                    logger.info(f"Batch complete, validating {len(collected_phones)} collected phones")
+                    async with AsyncSessionLocal() as db:
+                        try:
+                            await validate_and_save_numbers(list(collected_phones), db)
+                        except Exception as e:
+                            logger.error(f"Failed to validate collected phones: {e}")
+                    collected_phones.clear()
+                
+                if should_wait:
+                    logger.info(f"Waiting {OPENCNPJ_DELAY} seconds before next queue item...")
+                    await asyncio.sleep(OPENCNPJ_DELAY)
 
             except asyncio.CancelledError:
                 logger.info("CNPJ worker cancelled.")
