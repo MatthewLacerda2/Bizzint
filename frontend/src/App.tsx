@@ -14,6 +14,8 @@ function App() {
     input,
     setInput,
     isLoading,
+    isSharedView,
+    loadSharedChat,
     isShareModalOpen,
     setIsShareModalOpen,
     isShareLoading,
@@ -23,6 +25,17 @@ function App() {
   } = useChatbot()
 
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Detect shared chat URL on mount
+  useEffect(() => {
+    const path = window.location.pathname
+    if (path.startsWith('/share/')) {
+      const chatId = path.split('/share/')[1]
+      if (chatId) {
+        loadSharedChat(chatId)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -44,42 +57,53 @@ function App() {
           <MessageList messages={messages} isLoading={isLoading} />
         </div>
 
-        {/* Input Bar */}
-        <div className="p-6 bg-linear-to-t from-background via-background to-transparent pt-10">
-          <div className="max-w-2xl mx-auto relative group">
-            <Textarea
-              placeholder="Ask me to query the database or plot a chart..."
-              className={cn(
-                "min-h-[64px] pr-14 py-5 resize-none rounded-3xl bg-secondary/40 border-border/50 focus-visible:ring-primary/20 focus-visible:border-primary/30 shadow-2xl transition-all duration-300",
-                isLoading && "opacity-60 cursor-not-allowed"
-              )}
-              value={input}
-              disabled={isLoading}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSend()
-                }
-              }}
-            />
-            <Button
-              size="icon"
-              className={cn(
-                "absolute right-2.5 bottom-2.5 h-11 w-11 rounded-2xl transition-all duration-500 shadow-lg",
-                input.trim() && !isLoading ? "bg-primary scale-100 rotate-0" : "bg-muted scale-90 opacity-40 -rotate-12"
-              )}
-              disabled={!input.trim() || isLoading}
-              onClick={handleSend}
-            >
-              {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <SendHorizontal className="w-5 h-5" />
-              )}
-            </Button>
+        {/* Input Bar - Only show if not a shared view */}
+        {!isSharedView && (
+          <div className="p-6 bg-linear-to-t from-background via-background to-transparent pt-10">
+            <div className="max-w-2xl mx-auto relative group">
+              <Textarea
+                placeholder="Ask me to query the database or plot a chart..."
+                className={cn(
+                  "min-h-[64px] pr-14 py-5 resize-none rounded-3xl bg-secondary/40 border-border/50 focus-visible:ring-primary/20 focus-visible:border-primary/30 shadow-2xl transition-all duration-300",
+                  isLoading && "opacity-60 cursor-not-allowed"
+                )}
+                value={input}
+                disabled={isLoading}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSend()
+                  }
+                }}
+              />
+              <Button
+                size="icon"
+                className={cn(
+                  "absolute right-2.5 bottom-2.5 h-11 w-11 rounded-2xl transition-all duration-500 shadow-lg",
+                  input.trim() && !isLoading ? "bg-primary scale-100 rotate-0" : "bg-muted scale-90 opacity-40 -rotate-12"
+                )}
+                disabled={!input.trim() || isLoading}
+                onClick={handleSend}
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <SendHorizontal className="w-5 h-5" />
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Footer for shared view */}
+        {isSharedView && (
+          <div className="p-8 text-center border-t border-border/50 bg-background/50 backdrop-blur-sm">
+            <p className="text-sm text-muted-foreground">
+              This is a shared conversation from <span className="font-bold text-foreground">BizzInt</span>.
+            </p>
+          </div>
+        )}
       </main>
 
       <SharedChatModal

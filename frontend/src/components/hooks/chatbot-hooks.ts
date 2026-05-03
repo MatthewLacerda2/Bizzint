@@ -1,15 +1,49 @@
 import { useState } from 'react'
 import { streamChat } from '../../lib/chatbot-api'
-import { createSharedChat } from '../../lib/shared-chat-api'
+import { createSharedChat, getSharedChat } from '../../lib/shared-chat-api'
 import type { Message } from '../chatbot/types'
 
 export function useChatbot() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isSharedView, setIsSharedView] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isShareLoading, setIsShareLoading] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
+
+  const loadSharedChat = async (chatId: string) => {
+    setIsLoading(true)
+    setIsSharedView(true)
+    try {
+      const response = await getSharedChat(chatId)
+      const loadedMessages: Message[] = []
+      response.messages.forEach((m, idx) => {
+        // User message
+        loadedMessages.push({
+          id: `u-${idx}`,
+          role: 'user',
+          content: m.user_message,
+          timestamp: new Date()
+        })
+        // Assistant message
+        if (m.assistant_message) {
+          loadedMessages.push({
+            id: `a-${idx}`,
+            role: 'assistant',
+            content: m.assistant_message,
+            plots: m.plots || [],
+            timestamp: new Date()
+          })
+        }
+      })
+      setMessages(loadedMessages)
+    } catch (error) {
+      console.error('Error loading shared chat:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleShare = async () => {
     if (messages.length === 0) return
@@ -36,7 +70,7 @@ export function useChatbot() {
   }
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return
+    if (!input.trim() || isLoading || isSharedView) return
 
     const prompt = input.trim()
     const userMessage: Message = {
@@ -109,6 +143,8 @@ export function useChatbot() {
     input,
     setInput,
     isLoading,
+    isSharedView,
+    loadSharedChat,
     isShareModalOpen,
     setIsShareModalOpen,
     isShareLoading,
