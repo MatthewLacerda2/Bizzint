@@ -12,9 +12,10 @@ Haven't solved that one out.
 
 # Tech stack
 
+- Alembic (Database Migration)
 - FastAPI (Fast, Python)
-  - Alembic/SQLAlchemy
-  - Gemini API
+  - SQLAlchemy (ORM)
+  - Gemini API (LLM)
 - React (Fast, JavaScript/TypeScript)
   - shadcn/ui
 - PostgreSQL

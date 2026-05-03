@@ -14,6 +14,10 @@ class CNPJValidator(BaseModel):
         # Valida se tem 14 dígitos e se não é uma sequência repetida (ex: 111...)
         if len(numbers) != 14 or len(set(numbers)) == 1:
             raise ValueError('CNPJ Inválido')
+        
+        # Valida se a filial não é 0000 (ex: 0000XX no final)
+        if all(d == 0 for d in numbers[8:12]):
+            raise ValueError('CNPJ Inválido: Filial não pode ser 0000')
 
         # Cálculo dos Dígitos Verificadores
         def calculate_digit(digits, weights):
@@ -48,6 +52,10 @@ def validate_cnpj(v: str) -> str:
         raise ValueError('CNPJ Inválido')
 
     numbers = [int(digit) for digit in cleaned]
+    
+    # Valida se a filial não é 0000 (ex: 0000XX no final)
+    if all(d == 0 for d in numbers[8:12]):
+        raise ValueError('CNPJ Inválido: Filial não pode ser 0000')
 
     # Check digit calculation
     def calculate_digit(digits, weights):
