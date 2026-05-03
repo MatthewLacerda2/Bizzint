@@ -21,6 +21,13 @@ async def fetch_and_save_cnpjs(cnpj_list: List[str]):
                 socio_repo = SocioRepository(db)
                 
                 try:
+                    company = await company_repo.get_by_cnpj(cnpj)
+                    now = datetime.now()
+                    
+                    if company and company.last_updated_at.month == now.month and company.last_updated_at.year == now.year:
+                        logger.info(f"CNPJ {cnpj} already updated this month ({company.last_updated_at}). Skipping.")
+                        continue
+
                     logger.info(f"Fetching CNPJ {cnpj} ({i+1}/{len(cnpj_list)})")
                     response = await client.get(f"{base_url}/{cnpj}?dataset=receita", timeout=15.0)
                     
@@ -62,8 +69,7 @@ async def fetch_and_save_cnpjs(cnpj_list: List[str]):
                             "capital_social": cap_social
                         }
                         
-                        # Check if company exists
-                        company = await company_repo.get_by_cnpj(cnpj)
+                        # Check if company exists (we already have the 'company' variable from the start of the loop)
                         
                         if company:
                             await company_repo.update(company.id, company_data)
