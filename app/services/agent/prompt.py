@@ -18,6 +18,8 @@ def system_prompt() -> str:
       Give brief and direct answers.
       Do not mention the tools you're using.
       Do not explain your thought process unless useful to help the user understand the answer.
+
+      You may use markdown to format your text answers.
     </Instructions>
 
     <Tools>
@@ -27,6 +29,7 @@ def system_prompt() -> str:
     - SQL_tool receives a SQL query as a string.
       You may use it to query the database to inform yourself if needed and to answer questions.
       You can NOT write to the database, only READ operations will be accepted.
+      The database is in Postgresql 16.
 
     - Plot_tool receives data and configuration to render a chart in the frontend.
       It expects `data` as a list of dictionaries, `chart_type` ('line', 'bar', or 'pie'), and optionally a `title` and `description`.

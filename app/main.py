@@ -5,6 +5,7 @@ from .llms import get_llms_txt
 from .core.rate_limiter import limiter
 from .core.logging_middleware import LoggingMiddleware
 from .core.scheduler import setup_scheduler_jobs, start_scheduler, stop_scheduler
+from .services.cronjobs.opencnpj.fetcher import start_cnpj_worker, stop_cnpj_worker
 from .api.endpoints import router as api_router
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -22,11 +23,13 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    setup_scheduler_jobs()
-    start_scheduler()
+    start_cnpj_worker()
+    #setup_scheduler_jobs()
+    #start_scheduler()
 
     yield
-    stop_scheduler()
+    #stop_scheduler()
+    stop_cnpj_worker()
 
 app = FastAPI(
     title="BizzInt",

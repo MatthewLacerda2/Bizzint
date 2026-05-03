@@ -1,16 +1,16 @@
 import re
 from datetime import datetime, timedelta
 from typing import List, Set
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter
 from ...schemas.opencnpj import ScrapeOpenCnpjRequest, ScrapeOpenCnpjResponse
 from ...utils.cnpj_validation import validate_cnpj
 from ...utils.envs import OPENCNPJ_DELAY
-from ...services.cronjobs.opencnpj.fetcher import fetch_and_save_cnpjs
+from ...services.cronjobs.opencnpj.fetcher import add_cnpjs_to_queue, cnpj_queue
 
 router = APIRouter()
 
 @router.post("/", response_model=ScrapeOpenCnpjResponse)
-async def cnpj_search(request: ScrapeOpenCnpjRequest, background_tasks: BackgroundTasks):
+async def cnpj_search(request: ScrapeOpenCnpjRequest):
     total_received = len(request.cnpj_list)
     
     seen_cnpjs: Set[str] = set()
@@ -35,10 +35,11 @@ async def cnpj_search(request: ScrapeOpenCnpjRequest, background_tasks: Backgrou
     
     total_valid = len(valid_cnpj_list)
     
-    estimated_finish_time = datetime.now() + timedelta(seconds=total_valid * OPENCNPJ_DELAY)
-
-    # Start the scraping in the background
-    background_tasks.add_task(fetch_and_save_cnpjs, valid_cnpj_list)
+    # Start the scraping in the background via queue
+    await add_cnpjs_to_queue(valid_cnpj_list)
+    
+    current_queue_size = cnpj_queue.qsize() if cnpj_queue else len(valid_cnpj_list)
+    estimated_finish_time = datetime.now() + timedelta(seconds=current_queue_size * OPENCNPJ_DELAY)
     
     return ScrapeOpenCnpjResponse(
         total_valid=total_valid,
