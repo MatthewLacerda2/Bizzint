@@ -2,51 +2,26 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { Loader2, SendHorizontal } from "lucide-react"
-import { useEffect, useRef, useState } from 'react'
-import { ChartLineMultiple } from './components/line-chart-multiple'
-import { ChartBarMultiple } from './components/bar-chart-multiple'
-import { ChartPieLabelCustom } from './components/pie-chart-custom-label'
-import { streamChat, type PlotData } from './lib/chatbot-api'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-
-interface Message {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  plots?: PlotData[]
-  timestamp: Date
-}
-
-const PlotCard = ({ plot }: { plot: PlotData }) => {
-  if (plot.chart_type === 'bar') {
-    return (
-      <div className="my-4 w-full animate-in zoom-in-95 duration-300">
-        <ChartBarMultiple data={plot.data} title={plot.title} description={plot.description} />
-      </div>
-    );
-  }
-  
-  if (plot.chart_type === 'pie') {
-    return (
-      <div className="my-4 w-full animate-in zoom-in-95 duration-300">
-        <ChartPieLabelCustom data={plot.data} title={plot.title} description={plot.description} />
-      </div>
-    );
-  }
-
-  // default to line
-  return (
-    <div className="my-4 w-full animate-in zoom-in-95 duration-300">
-      <ChartLineMultiple data={plot.data} title={plot.title} description={plot.description} />
-    </div>
-  );
-};
+import { useEffect, useRef } from 'react'
+import { ChatHeader } from "./components/chatbot/chat-header"
+import { MessageList } from "./components/chatbot/message-list"
+import { SharedChatModal } from './components/chatbot/shared-chat-modal'
+import { useChatbot } from "./components/hooks/chatbot-hooks"
 
 function App() {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const {
+    messages,
+    input,
+    setInput,
+    isLoading,
+    isShareModalOpen,
+    setIsShareModalOpen,
+    isShareLoading,
+    shareUrl,
+    handleSend,
+    handleShare
+  } = useChatbot()
+
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -55,181 +30,18 @@ function App() {
     }
   }, [messages])
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return
-
-    const prompt = input.trim()
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: prompt,
-      timestamp: new Date()
-    }
-
-    const history = messages.map(m => ({
-      role: m.role,
-      content: m.content,
-      plots: m.plots
-    }));
-
-    setMessages(prev => [...prev, userMessage])
-    setInput('')
-    setIsLoading(true)
-
-    // Initial assistant message for streaming
-    const assistantMessageId = (Date.now() + 1).toString()
-    const assistantMessage: Message = {
-      id: assistantMessageId,
-      role: 'assistant',
-      content: '',
-      plots: [],
-      timestamp: new Date()
-    }
-
-    setMessages(prev => [...prev, assistantMessage])
-
-    try {
-      const stream = streamChat(prompt, history)
-
-      for await (const event of stream) {
-        if (event.type === 'text' && event.content) {
-          setMessages(prev => prev.map(msg =>
-            msg.id === assistantMessageId
-              ? { ...msg, content: msg.content + event.content }
-              : msg
-          ))
-        } else if (event.type === 'plot' && event.plot) {
-          setMessages(prev => prev.map(msg =>
-            msg.id === assistantMessageId
-              ? { ...msg, plots: [...(msg.plots || []), event.plot!] }
-              : msg
-          ))
-        } else if (event.type === 'error') {
-          setMessages(prev => prev.map(msg =>
-            msg.id === assistantMessageId
-              ? { ...msg, content: msg.content + "\n\n[Error: " + event.content + "]" }
-              : msg
-          ))
-        }
-      }
-    } catch (error) {
-      console.error('Streaming error:', error)
-      setMessages(prev => prev.map(msg =>
-        msg.id === assistantMessageId
-          ? { ...msg, content: msg.content + "\n\n[Failed to connect to the assistant]" }
-          : msg
-      ))
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col relative max-w-4xl mx-auto w-full border-x border-border/50">
-        {/* Header (Optional) */}
-        <div className="absolute top-0 left-0 right-0 h-14 border-b border-border/50 bg-background/80 backdrop-blur-md z-10 flex items-center px-6">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-medium tracking-tight uppercase text-muted-foreground">BizzInt AI Agent</span>
-          </div>
-        </div>
+        <ChatHeader onShare={handleShare} />
 
         {/* Messages */}
         <div
           ref={scrollRef}
           className="flex-1 overflow-y-auto p-4 space-y-8 scroll-smooth pt-20 pb-10"
         >
-          <div className="max-w-2xl mx-auto w-full space-y-8">
-            {messages.length === 0 && !isLoading && (
-              <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in-95 duration-1000">
-                <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 shadow-inner">
-                  <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
-                </div>
-                <h2 className="text-2xl font-bold tracking-tight mb-2">Olá, sou Dolby</h2>
-                <p className="text-muted-foreground text-sm max-w-[300px] leading-relaxed">
-                  Um chatbot para pesquisa de mercado no Brasil. <br />
-                  Pergunte algo para começar!
-                </p>
-              </div>
-            )}
-
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={cn(
-                  "flex animate-in fade-in slide-in-from-bottom-3 duration-500",
-                  msg.role === 'user' ? "justify-end" : "justify-start"
-                )}
-              >
-                <div className={cn(
-                  "flex flex-col gap-2 max-w-[90%]",
-                  msg.role === 'user' ? "items-end" : "items-start"
-                )}>
-                  <div className={cn(
-                    "text-sm leading-relaxed",
-                    msg.role === 'user'
-                      ? "bg-primary text-primary-foreground rounded-2xl px-5 py-3.5 rounded-tr-none shadow-md"
-                      : "text-foreground py-1"
-                  )}>
-                    {msg.content ? (
-                      msg.role === 'assistant' ? (
-                        <div className="space-y-3 w-full overflow-hidden">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={{
-                              p: ({node, ...props}: any) => <p className="leading-relaxed text-sm" {...props} />,
-                              a: ({node, ...props}: any) => <a className="text-primary hover:underline font-medium" {...props} />,
-                              strong: ({node, ...props}: any) => <strong className="font-semibold text-foreground" {...props} />,
-                              ul: ({node, ...props}: any) => <ul className="list-disc pl-5 space-y-1" {...props} />,
-                              ol: ({node, ...props}: any) => <ol className="list-decimal pl-5 space-y-1" {...props} />,
-                              li: ({node, ...props}: any) => <li className="pl-1" {...props} />,
-                              h1: ({node, ...props}: any) => <h1 className="text-xl font-bold mt-4 mb-2" {...props} />,
-                              h2: ({node, ...props}: any) => <h2 className="text-lg font-bold mt-4 mb-2" {...props} />,
-                              h3: ({node, ...props}: any) => <h3 className="text-md font-bold mt-3 mb-2" {...props} />,
-                              pre: ({node, ...props}: any) => <pre className="bg-secondary/50 p-3 rounded-xl overflow-x-auto text-xs font-mono border border-border/50 my-2" {...props} />,
-                              code: ({node, className, children, ...props}: any) => {
-                                const match = /language-(\w+)/.exec(className || '')
-                                return match ? (
-                                  <code className={className} {...props}>
-                                    {children}
-                                  </code>
-                                ) : (
-                                  <code className="bg-secondary/50 px-1.5 py-0.5 rounded-md font-mono text-[13px] text-primary" {...props}>
-                                    {children}
-                                  </code>
-                                )
-                              },
-                              table: ({node, ...props}: any) => <div className="overflow-x-auto my-4 w-full"><table className="w-full text-sm text-left border-collapse" {...props} /></div>,
-                              thead: ({node, ...props}: any) => <thead className="text-xs uppercase bg-secondary/50" {...props} />,
-                              th: ({node, ...props}: any) => <th className="px-4 py-2 border border-border/50 font-semibold" {...props} />,
-                              td: ({node, ...props}: any) => <td className="px-4 py-2 border border-border/50" {...props} />,
-                              blockquote: ({node, ...props}: any) => <blockquote className="border-l-4 border-primary/50 pl-4 py-1 my-2 italic text-muted-foreground" {...props} />,
-                            }}
-                          >
-                            {msg.content}
-                          </ReactMarkdown>
-                        </div>
-                      ) : (
-                        <p className="leading-relaxed text-sm whitespace-pre-wrap">{msg.content}</p>
-                      )
-                    ) : (msg.role === 'assistant' && !msg.plots?.length && (
-                      <div className="flex gap-1 items-center py-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:-0.3s]" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:-0.15s]" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" />
-                      </div>
-                    ))}
-
-                    {msg.plots?.map((plot, idx) => (
-                      <PlotCard key={idx} plot={plot} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <MessageList messages={messages} isLoading={isLoading} />
         </div>
 
         {/* Input Bar */}
@@ -269,6 +81,13 @@ function App() {
           </div>
         </div>
       </main>
+
+      <SharedChatModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        isLoading={isShareLoading}
+        shareUrl={shareUrl}
+      />
     </div>
   )
 }
