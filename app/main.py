@@ -6,7 +6,9 @@ from .core.rate_limiter import limiter
 from .core.logging_middleware import LoggingMiddleware
 from .core.scheduler import setup_scheduler_jobs, start_scheduler, stop_scheduler
 from .services.cronjobs.opencnpj.fetcher import start_cnpj_worker, stop_cnpj_worker
+from .services.whatsapp.catchup import run_whatsapp_catchup
 from .api.endpoints import router as api_router
+import asyncio
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi import _rate_limit_exceeded_handler
@@ -24,6 +26,9 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
 
     start_cnpj_worker()
+    
+    asyncio.create_task(run_whatsapp_catchup())
+    
     #setup_scheduler_jobs()
     #start_scheduler()
 
