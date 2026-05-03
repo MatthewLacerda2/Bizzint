@@ -1,10 +1,8 @@
 export interface PlotData {
+    data: any[];
+    chart_type: 'line' | 'bar' | 'pie';
     title?: string;
-    x_label?: string;
-    y_label?: string;
-    labels: string[];
-    values: number[];
-    chart_type: 'line' | 'bar';
+    description?: string;
 }
 
 export interface ChatMessage {

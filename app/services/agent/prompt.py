@@ -27,6 +27,10 @@ def system_prompt() -> str:
     - SQL_tool receives a SQL query as a string.
       You may use it to query the database to inform yourself if needed and to answer questions.
       You can NOT write to the database, only READ operations will be accepted.
+
+    - Plot_tool receives data and configuration to render a chart in the frontend.
+      It expects `data` as a list of dictionaries, `chart_type` ('line', 'bar', or 'pie'), and optionally a `title` and `description`.
+      The dictionary keys should be descriptive, as they will be used as labels in the chart. Use numeric values for the actual data to be plotted.
     
       The database has two tables:
       - Companies

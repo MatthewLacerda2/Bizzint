@@ -3,16 +3,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { Loader2, SendHorizontal } from "lucide-react"
 import { useEffect, useRef, useState } from 'react'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart as ReLineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis, YAxis
-} from 'recharts'
+import { ChartLineMultiple } from './components/line-chart-multiple'
+import { ChartBarMultiple } from './components/bar-chart-multiple'
+import { ChartPieLabelCustom } from './components/pie-chart-custom-label'
 import { streamChat, type PlotData } from './lib/chatbot-api'
 
 interface Message {
@@ -24,79 +17,26 @@ interface Message {
 }
 
 const PlotCard = ({ plot }: { plot: PlotData }) => {
-  const data = plot.labels.map((label, i) => ({
-    name: label,
-    value: plot.values[i]
-  }));
-
-  return (
-    <div className="bg-card rounded-xl p-4 my-4 w-full border border-border shadow-sm animate-in zoom-in-95 duration-300">
-      {plot.title && <h3 className="text-sm font-semibold mb-6 text-center text-muted-foreground">{plot.title}</h3>}
-      <div className="h-[250px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          {plot.chart_type === 'bar' ? (
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-              <XAxis
-                dataKey="name"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
-              />
-              <YAxis
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
-              />
-              <Tooltip
-                cursor={{ fill: 'hsl(var(--secondary) / 0.4)' }}
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--popover))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '12px',
-                  fontSize: '12px'
-                }}
-              />
-              <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={32} />
-            </BarChart>
-          ) : (
-            <ReLineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-              <XAxis
-                dataKey="name"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
-              />
-              <YAxis
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--popover))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '12px',
-                  fontSize: '12px'
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2.5}
-                dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: 'hsl(var(--background))' }}
-                activeDot={{ r: 6, strokeWidth: 0 }}
-              />
-            </ReLineChart>
-          )}
-        </ResponsiveContainer>
+  if (plot.chart_type === 'bar') {
+    return (
+      <div className="my-4 w-full animate-in zoom-in-95 duration-300">
+        <ChartBarMultiple data={plot.data} title={plot.title} description={plot.description} />
       </div>
+    );
+  }
+  
+  if (plot.chart_type === 'pie') {
+    return (
+      <div className="my-4 w-full animate-in zoom-in-95 duration-300">
+        <ChartPieLabelCustom data={plot.data} title={plot.title} description={plot.description} />
+      </div>
+    );
+  }
+
+  // default to line
+  return (
+    <div className="my-4 w-full animate-in zoom-in-95 duration-300">
+      <ChartLineMultiple data={plot.data} title={plot.title} description={plot.description} />
     </div>
   );
 };

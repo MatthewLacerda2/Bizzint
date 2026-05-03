@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     stop_scheduler()
 
 app = FastAPI(
-    title="BotI",
+    title="BizzInt",
     description="API for the Biss Int.",
     version="0.1.0",
     openapi_url="/api/v1/openapi.json",

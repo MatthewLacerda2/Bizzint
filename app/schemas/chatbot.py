@@ -1,16 +1,14 @@
 from pydantic import BaseModel
-from typing import Any, Literal, Optional, List, Union
+from typing import Any, Literal, Optional, List, Dict
 
 class PlotData(BaseModel):
     """
     Structured data for rendering charts in the frontend.
     """
+    data: List[Dict[str, Any]]
+    chart_type: Literal["line", "bar", "pie"]
     title: Optional[str] = None
-    x_label: Optional[str] = None
-    y_label: Optional[str] = None
-    labels: List[str]
-    values: List[float]
-    chart_type: Literal["line", "bar"] = "line"
+    description: Optional[str] = None
 
 class ChatMessage(BaseModel):
     role: Literal["user", "assistant"]

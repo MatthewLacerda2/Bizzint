@@ -30,6 +30,14 @@
 
 
 @layer base {
+  :root {
+    --chart-1: oklch(0.65 0.18 250); /* Blue */
+    --chart-2: oklch(0.7 0.15 280);  /* Purple */
+    --chart-3: oklch(0.75 0.15 320); /* Pink */
+    --chart-4: oklch(0.7 0.18 40);   /* Orange */
+    --chart-5: oklch(0.75 0.15 160); /* Green */
+  }
+
   * {
     @apply border-border;
   }
