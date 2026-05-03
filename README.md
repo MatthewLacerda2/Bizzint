@@ -12,30 +12,25 @@ Haven't solved that one out.
 
 # Tech stack
 
+- Alembic (Database Migration)
 - FastAPI (Fast, Python)
-  - SQLAlchemy
-  - Gemini API
-  - Async Cron (Scraper) Job with APScheduler
+  - SQLAlchemy (ORM)
+  - Gemini API (LLM)
 - React (Fast, JavaScript/TypeScript)
   - shadcn/ui
-- PostgreSQ
-- Terraform
-  - GCP Project just to grab the Gemini API Key
+- PostgreSQL
 
 # How to run
 
-Well, `docker-compose build && docker-compose up -d`
+`docker-compose build && docker-compose up -d`
+`alembic upgrade head`
 
-Or, you can run it locally. Stop all containers except the db
-Then:
+Or, you can run it locally:
 `python -m venv venv`
 `source venv/bin/activate`
 `pip install -r requirements.txt`
-`uvicorn fastapi.main:app --reload`
+`uvicorn app.main:app --reload`
 
 In a separate terminal:
 `cd frontend`
 `npm i && npm run dev`
-
-Note to AI Agents:
-- Do NOT try to run the repositories' code. That's developer's responsability

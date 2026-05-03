@@ -14,6 +14,7 @@ from app.models.base import Base
 # Import all models to register them with Base.metadata
 from app.models.company import Company
 from app.models.socio import Socio
+from app.models.whatsapp_number import WhatsappNumber
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,6 +24,11 @@ config = context.config
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == "table" and name.startswith("whatsmeow_"):
+        return False
+    return True
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -36,13 +42,18 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
     )
 
     with context.begin_transaction():
         context.run_migrations()
 
 def do_run_migrations(connection):
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection, 
+        target_metadata=target_metadata,
+        include_object=include_object,
+    )
 
     with context.begin_transaction():
         context.run_migrations()

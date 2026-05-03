@@ -17,10 +17,8 @@ export interface ChatStreamEvent {
     plot?: PlotData;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
 export async function* streamChat(prompt: string, history: ChatMessage[] = []): AsyncGenerator<ChatStreamEvent> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/chatbot/`, {
+    const response = await fetch(`/api/v1/chatbot/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
