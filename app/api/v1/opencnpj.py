@@ -3,17 +3,11 @@ from datetime import datetime, timedelta
 from typing import List, Set
 from fastapi import APIRouter, BackgroundTasks
 from ...schemas.opencnpj import ScrapeOpenCnpjRequest, ScrapeOpenCnpjResponse
+from ...utils.cnpj_validation import validate_cnpj
 from ...utils.envs import OPENCNPJ_DELAY
 from ...services.cronjobs.opencnpj.fetcher import fetch_and_save_cnpjs
 
 router = APIRouter()
-
-def is_valid_cnpj_format(cnpj: str) -> bool:
-    pattern = r'^(\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}|\d{14})$'
-    return bool(re.match(pattern, cnpj))
-
-def clean_cnpj(cnpj: str) -> str:
-    return re.sub(r'\D', '', cnpj)
 
 @router.post("/", response_model=ScrapeOpenCnpjResponse)
 async def cnpj_search(request: ScrapeOpenCnpjRequest, background_tasks: BackgroundTasks):
@@ -26,18 +20,18 @@ async def cnpj_search(request: ScrapeOpenCnpjRequest, background_tasks: Backgrou
     total_duplicated = 0
     
     for raw_cnpj in request.cnpj_list:
-        if not is_valid_cnpj_format(raw_cnpj):
+        try:
+            cleaned = validate_cnpj(raw_cnpj)
+            
+            if cleaned in seen_cnpjs:
+                total_duplicated += 1
+                continue
+                
+            seen_cnpjs.add(cleaned)
+            valid_cnpj_list.append(cleaned)
+        except ValueError:
             total_invalid += 1
             continue
-        
-        cleaned = clean_cnpj(raw_cnpj)
-        
-        if cleaned in seen_cnpjs:
-            total_duplicated += 1
-            continue
-            
-        seen_cnpjs.add(cleaned)
-        valid_cnpj_list.append(cleaned)
     
     total_valid = len(valid_cnpj_list)
     
