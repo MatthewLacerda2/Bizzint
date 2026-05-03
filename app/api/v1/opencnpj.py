@@ -47,10 +47,6 @@ async def cnpj_search(request: ScrapeOpenCnpjRequest, background_tasks: Backgrou
     background_tasks.add_task(fetch_and_save_cnpjs, valid_cnpj_list)
     
     return ScrapeOpenCnpjResponse(
-        valid_cnpj_list=valid_cnpj_list,
-        total_invalid=total_invalid,
-        total_duplicated=total_duplicated,
-        total_received=total_received,
         total_valid=total_valid,
         estimated_finish_time=estimated_finish_time
     )
