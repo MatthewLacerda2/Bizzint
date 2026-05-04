@@ -25,6 +25,8 @@ def pdf_generator_prompt() -> str:
       General use cases include market research, presentations, sales, etc.
       
       Since the user asked to generate a PDF, we can assume the information in the chat is mature for the purpose.
+      The plots are usually expected to be in the PDF, but use your best judgement.
+      The more detailed and thorough the user was in the chat, the more the PDF should also be.
       The user also can give a commentary to help guide your generation. If nothing was said, use your best judgement.
 
       The PDF must NOT explain your thought process.

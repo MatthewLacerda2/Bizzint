@@ -1,4 +1,4 @@
-from weasyprint import HTML
+from weasyprint import HTML, CSS
 
 
 def _render_pdf_bytes(title: str, subtitle: str, body_html: str, css: str) -> bytes:
@@ -8,15 +8,12 @@ def _render_pdf_bytes(title: str, subtitle: str, body_html: str, css: str) -> by
 <head>
 <meta charset="UTF-8">
 <title>{title} — {subtitle}</title>
-<style>
-{css}
-</style>
 </head>
 <body>
 {body_html}
 </body>
 </html>"""
-    return HTML(string=full_html).write_pdf()
+    return HTML(string=full_html).write_pdf(stylesheets=[CSS(string=css)])
 
 
 # ─── Tool signature (used by Gemini function-calling) ────────────────
