@@ -5,13 +5,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Share2 } from "lucide-react"
+import { MoreHorizontal, Share2, FileText } from "lucide-react"
 
 interface ChatDropdownProps {
   onShare: () => void
+  onGenerateReport: () => void
 }
 
-export function ChatDropdown({ onShare }: ChatDropdownProps) {
+export function ChatDropdown({ onShare, onGenerateReport }: ChatDropdownProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -20,6 +21,13 @@ export function ChatDropdown({ onShare }: ChatDropdownProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 bg-[#1a1a1a] border-border/20 text-white rounded-xl shadow-xl p-1">
+        <DropdownMenuItem
+          onClick={onGenerateReport}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 transition-colors"
+        >
+          <FileText className="h-4 w-4" />
+          <span className="text-sm font-medium">Generate report</span>
+        </DropdownMenuItem>
         <DropdownMenuItem
           onClick={onShare}
           className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 transition-colors"

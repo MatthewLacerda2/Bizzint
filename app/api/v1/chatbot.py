@@ -1,11 +1,9 @@
-import json
-from typing import List
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from ...services.agent.gemini_agent import gemini_agent
 from ...services.agent.tools.sql_tool import sql_tool, execute_sql
 from ...services.agent.tools.plot_tool import plot_tool
-from ...services.agent.prompt import system_prompt
+from ...services.agent.system_prompt import system_prompt
 from ...schemas.chatbot import ChatbotRequest, ChatStreamEvent
 from ...core.database import AsyncSessionLocal
 

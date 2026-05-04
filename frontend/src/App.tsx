@@ -6,7 +6,9 @@ import { useEffect, useRef } from 'react'
 import { ChatHeader } from "./components/chatbot/chat-header"
 import { MessageList } from "./components/chatbot/message-list"
 import { SharedChatModal } from './components/chatbot/shared-chat-modal'
+import { GenReportModal } from './components/chatbot/gen-report-modal'
 import { useChatbot } from "./components/hooks/chatbot-hooks"
+import { useState } from "react"
 
 function App() {
   const {
@@ -23,6 +25,8 @@ function App() {
     handleSend,
     handleShare
   } = useChatbot()
+
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -47,7 +51,7 @@ function App() {
     <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col relative max-w-4xl mx-auto w-full border-x border-border/50">
-        <ChatHeader onShare={handleShare} />
+        <ChatHeader onShare={handleShare} onGenerateReport={() => setIsReportModalOpen(true)} />
 
         {/* Messages */}
         <div
@@ -111,6 +115,12 @@ function App() {
         onClose={() => setIsShareModalOpen(false)}
         isLoading={isShareLoading}
         shareUrl={shareUrl}
+      />
+
+      <GenReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        messages={messages}
       />
     </div>
   )
